@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>无限轮播</title>
+  <script src="http://apps.bdimg.com/libs/jquery/1.9.1/jquery.min.js"></script>
+  <style>
+    .carousel{
+      position: relative;
+      width: 320px;
+      height: 180px;
+      margin: 30px auto;
+      overflow: hidden;
+    }
+    .carousel ul,
+    .carousel li{
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .carousel .img-ct{
+      position: absolute;
+    }
+
+    .carousel .img-ct::after{
+      content: '';
+      display: block;
+      clear: both;
+    }
+
+    .carousel .img-ct>li{
+      float: left;
+    }
+
+    .carousel .img-ct img{
+      width: 320px;
+      height: 180px;
+    }
+
+    .carousel .arrow{
+      position: absolute;
+      top: 50%;
+      display: inline-block;
+      margin-top: -15px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1px solid #fff;
+      color: #fff;
+      line-height: 30px;
+      text-decoration: none;
+      text-align: center;
+    }
+    
+    .carousel .pre{
+      left: 10px;
+    }
+
+    .carousel .next{
+      right: 10px;
+    }
+
+    .carousel .arrow:hover{
+      opacity: 0.7;
+    }
+
+    .carousel .btn{
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      font-size: 0;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .carousel .btn>li{
+      display: inline-block;
+      width: 30px;
+      height: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin: 0 3px;
+      cursor: pointer;
+    }
+
+    .carousel .btn .active{
+      background-color: #ccc;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="carousel">
+    <ul class="img-ct">
+      <li><a href="#"><img src="http://cdn.jirengu.com/book.jirengu.com/img/1.jpg" alt=""></a></li>
+      <li><a href="#"><img src="http://cdn.jirengu.com/book.jirengu.com/img/2.jpg" alt=""></a></li>
+      <li><a href="#"><img src="http://cdn.jirengu.com/book.jirengu.com/img/3.jpg" alt=""></a></li>
+      <li><a href="#"><img src="http://cdn.jirengu.com/book.jirengu.com/img/4.jpg" alt=""></a></li>
+    </ul>
+    <a href="#" class="pre arrow"><</a>
+    <a href="#" class="next arrow">></a>
+    <ul class="btn">
+      <li class="active"></li>
+      <li></li>
+      <li></li>
+      <li></li>
+    </ul>
+  </div>
+  <div class="carousel">
+      <ul class="img-ct">
+        <li><a href="#"><img src="http://cdn.jirengu.com/book.jirengu.com/img/1.jpg" alt=""></a></li>
+        <li><a href="#"><img src="http://cdn.jirengu.com/book.jirengu.com/img/2.jpg" alt=""></a></li>
+        <li><a href="#"><img src="http://cdn.jirengu.com/book.jirengu.com/img/3.jpg" alt=""></a></li>
+        <li><a href="#"><img src="http://cdn.jirengu.com/book.jirengu.com/img/4.jpg" alt=""></a></li>
+      </ul>
+      <a href="#" class="pre arrow"><</a>
+      <a href="#" class="next arrow">></a>
+      <ul class="btn">
+        <li class="active"></li>
+        <li></li>
+        <li></li>
+        <li></li>
+      </ul>
+    </div>
+  <script>
+    function Carousel($ct){
+      this.init($ct);
+      this.bind();
+    }
+
+    Carousel.prototype = {
+      constructor: Carousel,
+      init: function($ct){
+        this.$ct = $ct;
+        this.$imgCt = this.$ct.find('.img-ct');
+        this.$imgs = this.$ct.find('.img-ct>li');
+        this.$prebtn = this.$ct.find('.pre');
+        this.$nextbtn = this.$ct.find('.next');
+        this.$btn = this.$ct.find('.btn li');
+        
+        this.imgWidth = this.$imgs.width();
+        this.imgCount = this.$imgs.length;
+        this.index = 0;
+        this.isAnimate = false;
+
+        this.$imgCt.append(this.$imgs.first().clone());
+        this.$imgCt.prepend(this.$imgs.last().clone());
+        this.$imgCt.width((this.imgCount + 2) * this.imgWidth);
+        this.$imgCt.css('left', -this.imgWidth);
+
+      },
+      bind: function(){
+        var _this = this;
+        this.$prebtn.on('click',function(){
+          _this.playPre(1);
+        });
+        this.$nextbtn.on('click',function(){
+        _this.playNext(1);
+        });
+
+        this.$btn.on('click',function(){
+          var index = $(this).index();
+          if(_this.index > index){
+            _this.playPre(_this.index - index);
+          }
+          else{
+            _this.playNext(index - _this.index);
+          }
+        });
+      },
+      playPre: function(leng){
+        if(this.isAnimate) return;
+        this.isAnimate = true;
+        var _this = this;
+        this.$imgCt.animate({
+          left: '+=' + this.imgWidth * leng
+        },function(){
+          _this.index -= leng;
+          if(_this.index < 0){
+            _this.$imgCt.css('left', -_this.imgWidth * _this.imgCount);
+            _this.index = _this.imgCount - 1;
+          }
+          _this.isAnimate =false;
+          _this.setBtn();
+        });
+      },
+      playNext: function(leng){
+        if(this.isAnimate) return;
+        this.isAnimate = true;
+        var _this = this;
+        this.$imgCt.animate({
+          left: '-=' + this.imgWidth * leng
+        },function(){
+          _this.index += leng;
+          if(_this.index === _this.imgCount){
+            _this.$imgCt.css('left', -_this.imgWidth);
+            _this.index = 0;
+          }
+          _this.isAnimate =false;
+          _this.setBtn();
+        });
+      },
+      setBtn: function(){
+        this.$btn.eq(this.index).addClass('active')
+                 .siblings().removeClass('active');
+      }
+    }
+
+    var a = new Carousel($('.carousel').eq(0));
+    var b = new Carousel($('.carousel').eq(1));
+  </script>
+</body>
+</html>
